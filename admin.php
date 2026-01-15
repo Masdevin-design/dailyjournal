@@ -80,16 +80,7 @@ $currentPage = $_GET['page'] ?? 'dashboard';
 
         .dropdown-menu {
             border-radius: 10px;
-        }
-
-        <!-- DI DALAM <ul class="navbar-nav"> -->
-    <li class="nav-item">
-    <a class="nav-link <?= ($currentPage === 'gallery') ? 'active' : '' ?>"
-       href="admin.php?page=gallery">
-        Gallery
-    </a>
-  </li>
-<!-- Letakkan setelah menu Article -->
+        } 
 
         /* ===== FOOTER (BIRU CERAH & CLEAN) ===== */
         footer {
@@ -133,6 +124,7 @@ $currentPage = $_GET['page'] ?? 'dashboard';
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
 
+                <!-- DASHBOARD -->
                 <li class="nav-item">
                     <a class="nav-link <?= ($currentPage === 'dashboard') ? 'active' : '' ?>"
                        href="admin.php?page=dashboard">
@@ -140,6 +132,7 @@ $currentPage = $_GET['page'] ?? 'dashboard';
                     </a>
                 </li>
 
+                <!-- ARTICLE -->
                 <li class="nav-item">
                     <a class="nav-link <?= ($currentPage === 'article') ? 'active' : '' ?>"
                        href="admin.php?page=article">
@@ -147,6 +140,7 @@ $currentPage = $_GET['page'] ?? 'dashboard';
                     </a>
                 </li>
 
+                <!-- GALLERY (SOAL 1) -->
                 <li class="nav-item">
                     <a class="nav-link <?= ($currentPage === 'gallery') ? 'active' : '' ?>"
                        href="admin.php?page=gallery">
@@ -154,7 +148,7 @@ $currentPage = $_GET['page'] ?? 'dashboard';
                     </a>
                 </li>
 
-                <!-- USER DROPDOWN MENU -->
+                <!-- USER DROPDOWN -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle"
                        href="#"
@@ -163,10 +157,10 @@ $currentPage = $_GET['page'] ?? 'dashboard';
                         <?= htmlspecialchars($_SESSION['username']); ?>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
-                        <!-- PROFILE MENU (SOAL 2) -->
+                        <!-- PROFILE (SOAL 2) -->
                         <li><a class="dropdown-item" href="admin.php?page=profile">Profile</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <!-- LOGOUT MENU -->
+                        <!-- LOGOUT -->
                         <li><a class="dropdown-item" href="logout.php">Logout</a></li>
                     </ul>
                 </li>
@@ -191,25 +185,6 @@ $currentPage = $_GET['page'] ?? 'dashboard';
         ?>
     </div>
 </section>
-<!-- HAPUS ?> YANG BERLEBIHAN DI BAWAH -->
-
-<!-- ================= CONTENT ================= -->
-<section id="content" class="p-5">
-    <div class="container">
-        <?php
-
-        // Update array allowedPages
-     $allowedPages = ['dashboard', 'article', 'gallery', 'profile'];
-
-        if (in_array($currentPage, $allowedPages, true) && file_exists($currentPage . ".php")) {
-            include $currentPage . ".php";
-        } else {
-            include "dashboard.php";
-        }
-        ?>
-    ?>
-    </div>
-</section>
 
 <!-- ================= FOOTER ================= -->
 <footer class="text-center p-5">
@@ -226,8 +201,8 @@ $currentPage = $_GET['page'] ?? 'dashboard';
     </div>
     <div class="fw-semibold text-dark">
         <p style="color: white;">
-    Devin Abiyyu Pandu Pratama © 2025
-    </p>
+            Devin Abiyyu Pandu Pratama © 2025
+        </p>
     </div>
 </footer>
 
