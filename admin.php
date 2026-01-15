@@ -82,6 +82,15 @@ $currentPage = $_GET['page'] ?? 'dashboard';
             border-radius: 10px;
         }
 
+        <!-- DI DALAM <ul class="navbar-nav"> -->
+    <li class="nav-item">
+    <a class="nav-link <?= ($currentPage === 'gallery') ? 'active' : '' ?>"
+       href="admin.php?page=gallery">
+        Gallery
+    </a>
+  </li>
+<!-- Letakkan setelah menu Article -->
+
         /* ===== FOOTER (BIRU CERAH & CLEAN) ===== */
         footer {
             background: linear-gradient(90deg, #97682eff, #887547ff);
@@ -138,6 +147,14 @@ $currentPage = $_GET['page'] ?? 'dashboard';
                     </a>
                 </li>
 
+                <li class="nav-item">
+                    <a class="nav-link <?= ($currentPage === 'gallery') ? 'active' : '' ?>"
+                       href="admin.php?page=gallery">
+                        Gallery
+                    </a>
+                </li>
+
+                <!-- USER DROPDOWN MENU -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle"
                        href="#"
@@ -146,6 +163,10 @@ $currentPage = $_GET['page'] ?? 'dashboard';
                         <?= htmlspecialchars($_SESSION['username']); ?>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
+                        <!-- PROFILE MENU (SOAL 2) -->
+                        <li><a class="dropdown-item" href="admin.php?page=profile">Profile</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <!-- LOGOUT MENU -->
                         <li><a class="dropdown-item" href="logout.php">Logout</a></li>
                     </ul>
                 </li>
@@ -159,7 +180,26 @@ $currentPage = $_GET['page'] ?? 'dashboard';
 <section id="content" class="p-5">
     <div class="container">
         <?php
-        $allowedPages = ['dashboard', 'article'];
+        // UPDATE INI: TAMBAH 'profile' DI ALLOWED PAGES
+        $allowedPages = ['dashboard', 'article', 'gallery', 'profile'];
+        
+        if (in_array($currentPage, $allowedPages, true) && file_exists($currentPage . ".php")) {
+            include $currentPage . ".php";
+        } else {
+            include "dashboard.php";
+        }
+        ?>
+    </div>
+</section>
+<!-- HAPUS ?> YANG BERLEBIHAN DI BAWAH -->
+
+<!-- ================= CONTENT ================= -->
+<section id="content" class="p-5">
+    <div class="container">
+        <?php
+
+        // Update array allowedPages
+     $allowedPages = ['dashboard', 'article', 'gallery', 'profile'];
 
         if (in_array($currentPage, $allowedPages, true) && file_exists($currentPage . ".php")) {
             include $currentPage . ".php";
@@ -167,6 +207,7 @@ $currentPage = $_GET['page'] ?? 'dashboard';
             include "dashboard.php";
         }
         ?>
+    ?>
     </div>
 </section>
 
