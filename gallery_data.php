@@ -1,3 +1,16 @@
+<?php
+include "koneksi.php";
+
+$hlm = (isset($_POST['hlm'])) ? (int)$_POST['hlm'] : 1;
+$limit = 4;
+$limit_start = ($hlm - 1) * $limit;
+$limit_start = ($limit_start < 0) ? 0 : $limit_start;
+$no = $limit_start + 1;
+
+$sql = "SELECT * FROM gallery ORDER BY uploaded_at DESC LIMIT $limit_start, $limit";
+$hasil = $conn->query($sql);
+?>
+
 <table class="table table-hover">
   <thead class="table-dark">
     <tr>
@@ -10,44 +23,36 @@
   </thead>
   <tbody>
   <?php
-  include "koneksi.php";
-
-  $hlm = (isset($_POST['hlm'])) ? (int)$_POST['hlm'] : 1;
-  $limit = 4;
-  $limit_start = ($hlm - 1) * $limit;
-  $limit_start = ($limit_start < 0) ? 0 : $limit_start;
-  $no = $limit_start + 1;
-
-  // PERBAIKAN: Ganti tanggal menjadi uploaded_at
-  $sql = "SELECT * FROM gallery ORDER BY uploaded_at DESC LIMIT $limit_start, $limit";
-  $hasil = $conn->query($sql);
-
   while ($row = $hasil->fetch_assoc()) {
   ?>
     <tr>
-        <td><?= $no++ ?></td>
+        <td><?php echo $no++; ?></td>
         <td>
-            <strong><?= $row["title"] ?></strong> <!-- Ganti judul -> title -->
-            <br>pada : <?= $row["uploaded_at"] ?> <!-- Ganti tanggal -> uploaded_at -->
+            <strong><?php echo htmlspecialchars($row["title"]); ?></strong>
+            <br>pada : <?php echo $row["uploaded_at"]; ?>
         </td>
-        <td><?= $row["description"] ?></td> <!-- Ganti deskripsi -> description -->
+        <td><?php echo htmlspecialchars($row["description"]); ?></td>
         <td>
             <?php
-            if ($row["image"] != '') { <!-- Ganti gambar -> image -->
+            if ($row["image"] != '') {
                 if (file_exists('img/' . $row["image"] . '')) {
             ?>
-                    <img src="img/<?= $row["image"] ?>" width="100"> <!-- Ganti gambar -> image -->
+                    <img src="img/<?php echo htmlspecialchars($row["image"]); ?>" width="100">
             <?php
                 }
             }
             ?>
         </td>
         <td>
-        <a href="#" title="edit" class="badge rounded-pill text-bg-success" data-bs-toggle="modal" data-bs-target="#modalEdit<?= $row["id"] ?>"><i class="bi bi-pencil"></i></a>
-        <a href="#" title="delete" class="badge rounded-pill text-bg-danger" data-bs-toggle="modal" data-bs-target="#modalHapus<?= $row["id"] ?>"><i class="bi bi-x-circle"></i></a>
+        <a href="#" title="edit" class="badge rounded-pill text-bg-success" data-bs-toggle="modal" data-bs-target="#modalEdit<?php echo $row["id"]; ?>">
+            <i class="bi bi-pencil"></i>
+        </a>
+        <a href="#" title="delete" class="badge rounded-pill text-bg-danger" data-bs-toggle="modal" data-bs-target="#modalHapus<?php echo $row["id"]; ?>">
+            <i class="bi bi-x-circle"></i>
+        </a>
 
         <!-- Awal Modal Edit -->
-        <div class="modal fade" id="modalEdit<?= $row["id"] ?>" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal fade" id="modalEdit<?php echo $row["id"]; ?>" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -58,29 +63,29 @@
                         <div class="modal-body">
                             <div class="mb-3">
                                 <label for="formGroupExampleInput" class="form-label">Judul</label>
-                                <input type="hidden" name="id" value="<?= $row["id"] ?>">
-                                <input type="text" class="form-control" name="title" placeholder="Tuliskan Judul Gallery" value="<?= $row["title"] ?>" required> <!-- Ganti judul -> title -->
+                                <input type="hidden" name="id" value="<?php echo $row["id"]; ?>">
+                                <input type="text" class="form-control" name="title" placeholder="Tuliskan Judul Gallery" value="<?php echo htmlspecialchars($row["title"]); ?>" required>
                             </div>
                             <div class="mb-3">
                                 <label for="floatingTextarea2">Deskripsi</label>
-                                <textarea class="form-control" placeholder="Tuliskan Deskripsi Gallery" name="description" required><?= $row["description"] ?></textarea> <!-- Ganti deskripsi -> description -->
+                                <textarea class="form-control" placeholder="Tuliskan Deskripsi Gallery" name="description" required><?php echo htmlspecialchars($row["description"]); ?></textarea>
                             </div>
                             <div class="mb-3">
                                 <label for="formGroupExampleInput2" class="form-label">Ganti Gambar</label>
-                                <input type="file" class="form-control" name="image"> <!-- Ganti gambar -> image -->
+                                <input type="file" class="form-control" name="image">
                             </div>
                             <div class="mb-3">
                                 <label for="formGroupExampleInput3" class="form-label">Gambar Lama</label>
                                 <?php
-                                if ($row["image"] != '') { <!-- Ganti gambar -> image -->
+                                if ($row["image"] != '') {
                                     if (file_exists('img/' . $row["image"] . '')) {
                                 ?>
-                                        <br><img src="img/<?= $row["image"] ?>" width="100"> <!-- Ganti gambar -> image -->
+                                        <br><img src="img/<?php echo htmlspecialchars($row["image"]); ?>" width="100">
                                 <?php
                                     }
                                 }
                                 ?>
-                                <input type="hidden" name="image_lama" value="<?= $row["image"] ?>"> <!-- Ganti gambar_lama -> image_lama -->
+                                <input type="hidden" name="image_lama" value="<?php echo $row["image"]; ?>">
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -94,7 +99,7 @@
         <!-- Akhir Modal Edit -->
 
         <!-- Awal Modal Hapus -->
-        <div class="modal fade" id="modalHapus<?= $row["id"] ?>" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal fade" id="modalHapus<?php echo $row["id"]; ?>" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -104,9 +109,9 @@
                     <form method="post" action="" enctype="multipart/form-data">
                         <div class="modal-body">
                             <div class="mb-3">
-                                <label for="formGroupExampleInput" class="form-label">Yakin akan menghapus gallery "<strong><?= $row["title"] ?></strong>"?</label> <!-- Ganti judul -> title -->
-                                <input type="hidden" name="id" value="<?= $row["id"] ?>">
-                                <input type="hidden" name="image" value="<?= $row["image"] ?>"> <!-- Ganti gambar -> image -->
+                                <label for="formGroupExampleInput" class="form-label">Yakin akan menghapus gallery "<strong><?php echo htmlspecialchars($row["title"]); ?></strong>"?</label>
+                                <input type="hidden" name="id" value="<?php echo $row["id"]; ?>">
+                                <input type="hidden" name="image" value="<?php echo $row["image"]; ?>">
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -127,7 +132,6 @@
 </table>
 
 <?php 
-// PERBAIKAN: Query untuk menghitung total data
 $sql1 = "SELECT COUNT(*) as total FROM gallery";
 $hasil1 = $conn->query($sql1);
 $row = $hasil1->fetch_assoc();
