@@ -18,7 +18,8 @@
   $limit_start = ($limit_start < 0) ? 0 : $limit_start;
   $no = $limit_start + 1;
 
-  $sql = "SELECT * FROM gallery ORDER BY tanggal DESC LIMIT $limit_start, $limit";
+  // PERBAIKAN: Ganti tanggal menjadi uploaded_at
+  $sql = "SELECT * FROM gallery ORDER BY uploaded_at DESC LIMIT $limit_start, $limit";
   $hasil = $conn->query($sql);
 
   while ($row = $hasil->fetch_assoc()) {
@@ -26,16 +27,16 @@
     <tr>
         <td><?= $no++ ?></td>
         <td>
-            <strong><?= $row["judul"] ?></strong>
-            <br>pada : <?= $row["tanggal"] ?>
+            <strong><?= $row["title"] ?></strong> <!-- Ganti judul -> title -->
+            <br>pada : <?= $row["uploaded_at"] ?> <!-- Ganti tanggal -> uploaded_at -->
         </td>
-        <td><?= $row["deskripsi"] ?></td>
+        <td><?= $row["description"] ?></td> <!-- Ganti deskripsi -> description -->
         <td>
             <?php
-            if ($row["gambar"] != '') {
-                if (file_exists('img/' . $row["gambar"] . '')) {
+            if ($row["image"] != '') { <!-- Ganti gambar -> image -->
+                if (file_exists('img/' . $row["image"] . '')) {
             ?>
-                    <img src="img/<?= $row["gambar"] ?>" width="100">
+                    <img src="img/<?= $row["image"] ?>" width="100"> <!-- Ganti gambar -> image -->
             <?php
                 }
             }
@@ -58,28 +59,28 @@
                             <div class="mb-3">
                                 <label for="formGroupExampleInput" class="form-label">Judul</label>
                                 <input type="hidden" name="id" value="<?= $row["id"] ?>">
-                                <input type="text" class="form-control" name="judul" placeholder="Tuliskan Judul Gallery" value="<?= $row["judul"] ?>" required>
+                                <input type="text" class="form-control" name="title" placeholder="Tuliskan Judul Gallery" value="<?= $row["title"] ?>" required> <!-- Ganti judul -> title -->
                             </div>
                             <div class="mb-3">
                                 <label for="floatingTextarea2">Deskripsi</label>
-                                <textarea class="form-control" placeholder="Tuliskan Deskripsi Gallery" name="deskripsi" required><?= $row["deskripsi"] ?></textarea>
+                                <textarea class="form-control" placeholder="Tuliskan Deskripsi Gallery" name="description" required><?= $row["description"] ?></textarea> <!-- Ganti deskripsi -> description -->
                             </div>
                             <div class="mb-3">
                                 <label for="formGroupExampleInput2" class="form-label">Ganti Gambar</label>
-                                <input type="file" class="form-control" name="gambar">
+                                <input type="file" class="form-control" name="image"> <!-- Ganti gambar -> image -->
                             </div>
                             <div class="mb-3">
                                 <label for="formGroupExampleInput3" class="form-label">Gambar Lama</label>
                                 <?php
-                                if ($row["gambar"] != '') {
-                                    if (file_exists('img/' . $row["gambar"] . '')) {
+                                if ($row["image"] != '') { <!-- Ganti gambar -> image -->
+                                    if (file_exists('img/' . $row["image"] . '')) {
                                 ?>
-                                        <br><img src="img/<?= $row["gambar"] ?>" width="100">
+                                        <br><img src="img/<?= $row["image"] ?>" width="100"> <!-- Ganti gambar -> image -->
                                 <?php
                                     }
                                 }
                                 ?>
-                                <input type="hidden" name="gambar_lama" value="<?= $row["gambar"] ?>">
+                                <input type="hidden" name="image_lama" value="<?= $row["image"] ?>"> <!-- Ganti gambar_lama -> image_lama -->
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -103,9 +104,9 @@
                     <form method="post" action="" enctype="multipart/form-data">
                         <div class="modal-body">
                             <div class="mb-3">
-                                <label for="formGroupExampleInput" class="form-label">Yakin akan menghapus gallery "<strong><?= $row["judul"] ?></strong>"?</label>
+                                <label for="formGroupExampleInput" class="form-label">Yakin akan menghapus gallery "<strong><?= $row["title"] ?></strong>"?</label> <!-- Ganti judul -> title -->
                                 <input type="hidden" name="id" value="<?= $row["id"] ?>">
-                                <input type="hidden" name="gambar" value="<?= $row["gambar"] ?>">
+                                <input type="hidden" name="image" value="<?= $row["image"] ?>"> <!-- Ganti gambar -> image -->
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -126,16 +127,18 @@
 </table>
 
 <?php 
-$sql1 = "SELECT * FROM gallery";
-$hasil1 = $conn->query($sql1); 
-$total_records = $hasil1->num_rows;
+// PERBAIKAN: Query untuk menghitung total data
+$sql1 = "SELECT COUNT(*) as total FROM gallery";
+$hasil1 = $conn->query($sql1);
+$row = $hasil1->fetch_assoc();
+$total_records = $row['total'];
 ?>
 <p>Total gallery : <?php echo $total_records; ?></p>
 <nav class="mb-2">
     <ul class="pagination justify-content-end">
     <?php
         $jumlah_page = ceil($total_records / $limit);
-        $jumlah_number = 1; //jumlah halaman ke kanan dan kiri dari halaman yang aktif
+        $jumlah_number = 1;
         $start_number = ($hlm > $jumlah_number)? $hlm - $jumlah_number : 1;
         $end_number = ($hlm < ($jumlah_page - $jumlah_number))? $hlm + $jumlah_number : $jumlah_page;
 

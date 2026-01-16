@@ -1,3 +1,7 @@
+<?php
+session_start();
+require_once 'koneksi.php';
+?>
 <div class="container">
     <!-- Button trigger modal -->
     <button type="button" class="btn btn-secondary mb-2" data-bs-toggle="modal" data-bs-target="#modalTambah">
@@ -19,15 +23,15 @@
                         <div class="modal-body">
                             <div class="mb-3">
                                 <label for="formGroupExampleInput" class="form-label">Judul</label>
-                                <input type="text" class="form-control" name="judul" placeholder="Tuliskan Judul Gallery" required>
+                                <input type="text" class="form-control" name="title" placeholder="Tuliskan Judul Gallery" required>
                             </div>
                             <div class="mb-3">
                                 <label for="floatingTextarea2">Deskripsi</label>
-                                <textarea class="form-control" placeholder="Tuliskan Deskripsi Gallery" name="deskripsi" required></textarea>
+                                <textarea class="form-control" placeholder="Tuliskan Deskripsi Gallery" name="description" required></textarea>
                             </div>
                             <div class="mb-3">
                                 <label for="formGroupExampleInput2" class="form-label">Gambar</label>
-                                <input type="file" class="form-control" name="gambar" required>
+                                <input type="file" class="form-control" name="image" required>
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -66,30 +70,52 @@ $(document).ready(function(){
 </script>
 
 <?php
-include "upload_foto.php";
+// HAPUS baris ini: include "upload_foto.php";
 
 //jika tombol simpan diklik
 if (isset($_POST['simpan'])) {
-    $judul = $_POST['judul'];
-    $deskripsi = $_POST['deskripsi'];
-    $tanggal = date("Y-m-d H:i:s");
-    $gambar = '';
-    $nama_gambar = $_FILES['gambar']['name'];
+    $title = $_POST['title'];
+    $description = $_POST['description'];
+    $uploaded_at = date("Y-m-d H:i:s");
+    $username = $_SESSION['username'] ?? 'admin'; // Ambil dari session
+    $image = '';
+    $nama_image = $_FILES['image']['name'];
 
     //jika ada file yang dikirim  
-    if ($nama_gambar != '') {
-        //panggil function upload_foto untuk cek spesifikasi file yg dikirimkan user
-        //function ini memiliki 2 keluaran yaitu status dan message
-        $cek_upload = upload_foto($_FILES["gambar"]);
-
-        //cek status true/false
-        if ($cek_upload['status']) {
-            //jika true maka message berisi nama file gambar
-            $gambar = $cek_upload['message'];
-        } else {
-            //jika false maka message berisi pesan error, tampilkan dalam alert
+    if ($nama_image != '') {
+        $target_dir = "img/";
+        $target_file = $target_dir . basename($nama_image);
+        $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
+        
+        // Validasi file
+        $allowed_types = ['jpg', 'jpeg', 'png', 'gif'];
+        $max_size = 2 * 1024 * 1024; // 2MB
+        
+        if (!in_array($imageFileType, $allowed_types)) {
             echo "<script>
-                alert('" . $cek_upload['message'] . "');
+                alert('Hanya file JPG, JPEG, PNG & GIF yang diizinkan!');
+                document.location='admin.php?page=gallery';
+            </script>";
+            die;
+        }
+        
+        if ($_FILES['image']['size'] > $max_size) {
+            echo "<script>
+                alert('Ukuran file maksimal 2MB!');
+                document.location='admin.php?page=gallery';
+            </script>";
+            die;
+        }
+        
+        // Generate nama file unik
+        $image_name = time() . '_' . uniqid() . '.' . $imageFileType;
+        $target_file = $target_dir . $image_name;
+        
+        if (move_uploaded_file($_FILES['image']['tmp_name'], $target_file)) {
+            $image = $image_name;
+        } else {
+            echo "<script>
+                alert('Gagal mengupload gambar!');
                 document.location='admin.php?page=gallery';
             </script>";
             die;
@@ -101,30 +127,33 @@ if (isset($_POST['simpan'])) {
         //jika ada id, lakukan update data dengan id tersebut
         $id = $_POST['id'];
 
-        if ($nama_gambar == '') {
+        if ($nama_image == '') {
             //jika tidak ganti gambar
-            $gambar = $_POST['gambar_lama'];
+            $image = $_POST['image_lama'];
         } else {
             //jika ganti gambar, hapus gambar lama
-            unlink("img/" . $_POST['gambar_lama']);
+            if ($_POST['image_lama'] != '' && file_exists("img/" . $_POST['image_lama'])) {
+                unlink("img/" . $_POST['image_lama']);
+            }
         }
 
         $stmt = $conn->prepare("UPDATE gallery 
                                 SET 
-                                judul = ?,
-                                deskripsi = ?,
-                                gambar = ?,
-                                tanggal = ?
+                                title = ?,
+                                description = ?,
+                                image = ?,
+                                uploaded_at = ?,
+                                username = ?
                                 WHERE id = ?");
 
-        $stmt->bind_param("ssssi", $judul, $deskripsi, $gambar, $tanggal, $id);
+        $stmt->bind_param("sssssi", $title, $description, $image, $uploaded_at, $username, $id);
         $simpan = $stmt->execute();
     } else {
         //jika tidak ada id, lakukan insert data baru
-        $stmt = $conn->prepare("INSERT INTO gallery (judul, deskripsi, gambar, tanggal)
-                                VALUES (?, ?, ?, ?)");
+        $stmt = $conn->prepare("INSERT INTO gallery (title, description, image, uploaded_at, username)
+                                VALUES (?, ?, ?, ?, ?)");
 
-        $stmt->bind_param("ssss", $judul, $deskripsi, $gambar, $tanggal);
+        $stmt->bind_param("sssss", $title, $description, $image, $uploaded_at, $username);
         $simpan = $stmt->execute();
     }
 
@@ -135,7 +164,7 @@ if (isset($_POST['simpan'])) {
         </script>";
     } else {
         echo "<script>
-            alert('Simpan data gagal');
+            alert('Simpan data gagal: " . $conn->error . "');
             document.location='admin.php?page=gallery';
         </script>";
     }
@@ -147,15 +176,14 @@ if (isset($_POST['simpan'])) {
 //jika tombol hapus diklik
 if (isset($_POST['hapus'])) {
     $id = $_POST['id'];
-    $gambar = $_POST['gambar'];
+    $image = $_POST['image'];
 
-    if ($gambar != '') {
+    if ($image != '' && file_exists("img/" . $image)) {
         //hapus file gambar
-        unlink("img/" . $gambar);
+        unlink("img/" . $image);
     }
 
     $stmt = $conn->prepare("DELETE FROM gallery WHERE id = ?");
-
     $stmt->bind_param("i", $id);
     $hapus = $stmt->execute();
 
@@ -166,7 +194,7 @@ if (isset($_POST['hapus'])) {
         </script>";
     } else {
         echo "<script>
-            alert('Hapus data gagal');
+            alert('Hapus data gagal: " . $conn->error . "');
             document.location='admin.php?page=gallery';
         </script>";
     }
